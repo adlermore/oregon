@@ -47,6 +47,7 @@ const InputField = forwardRef<HTMLInputElement, InputFieldProps>(({
 			{(type === 'phone' || mask) ? (
 				<InputMask
 					{...props}
+					ref={ref} 
 					mask={mask || "(___) ___-____"}
 					replacement={{ _: /\d/ }}
 					placeholder={props.placeholder || "Enter Phone Number"}

@@ -7,9 +7,10 @@ import { registerPageSchema } from '@/validation/schemas';
 import InputField from '@/components/common/input';
 import Button from '@/components/common/button';
 import Link from 'next/link';
+import { fetchRequest } from '@/lib/fetchRequest';
 
 interface RegisterFormValues {
-  business_name: string;
+  full_name: string;
   phone: string;
   email: string;
   password: string;
@@ -26,8 +27,14 @@ const RegisterForm: React.FC = () => {
     mode: 'onTouched',
   });
 
-  const onSubmit = (data: RegisterFormValues) => {
+  const onSubmit = async (data: RegisterFormValues) => {
     console.log('Register form data:', data);
+    const res = await fetchRequest('auth/register', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+    console.log('API response:', res);
+
   };
 
   return (
@@ -44,12 +51,12 @@ const RegisterForm: React.FC = () => {
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5" noValidate>
           <InputField
-            label="Business Name"
+            label="Full Name"
             type="text"
-            placeholder="Enter your business name"
+            placeholder="Enter your full name"
             required
-            error={errors.business_name?.message}
-            {...register('business_name')}
+            error={errors.full_name?.message}
+            {...register('full_name')}
           />
 
           <InputField

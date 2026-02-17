@@ -33,7 +33,7 @@ export const registerSchema = yup.object({
 });
 
 export const registerPageSchema = yup.object({
-    business_name: businessName,
+    full_name: required,
     phone,
     email,
     password,
