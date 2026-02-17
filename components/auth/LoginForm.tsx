@@ -31,7 +31,7 @@ const LoginForm: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-[460px] mx-auto">
+    <div className="w-full max-w-115 mx-auto">
       <div className="bg-white rounded-2xl shadow-form p-6 sm:p-10">
         <div className="mb-8 text-center">
           <h1 className="text-2xl sm:text-3xl font-bold text-secondary mb-2">
