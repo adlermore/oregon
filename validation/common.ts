@@ -20,3 +20,5 @@ export const password_confirmation = yup
     .string()
     .oneOf([yup.ref('password')], 'Passwords must match')
     .required('Repeat your password')
+
+export const businessName = yup.string().required('Business name is required').min(2, 'Minimum 2 characters');

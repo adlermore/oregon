@@ -1,5 +1,5 @@
 import * as yup from "yup";
-import {email, password, password_confirmation, phone, required, usdot} from "@/validation/common";
+import {email, password, password_confirmation, phone, required, usdot, businessName} from "@/validation/common";
 
 export const contactFormSchema = yup.object({
     fullName: required,
@@ -28,6 +28,14 @@ export const registerSchema = yup.object({
     full_name: required,
     email,
     phone,
+    password,
+    password_confirmation
+});
+
+export const registerPageSchema = yup.object({
+    business_name: businessName,
+    phone,
+    email,
     password,
     password_confirmation
 });

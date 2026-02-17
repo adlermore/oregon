@@ -1,5 +1,5 @@
 import { InputMask } from '@react-input/mask';
-import React, { useState } from "react";
+import React, { useState, forwardRef } from "react";
 import IconEyeOpen from "@/components/icons/IconEyeOpen";
 import IconEyeClose from "@/components/icons/IconEyeClose";
 import InputError from "@/components/common/input/InputError";
@@ -18,10 +18,13 @@ export interface InputFieldProps {
 	defaultValue?: string | number;
 	maxLength?: number;
 	onFocus?: () => void;
-  minValue?: number;
+	minValue?: number;
+	name?: string;
+	onChange?: React.ChangeEventHandler<HTMLInputElement>;
+	onBlur?: React.FocusEventHandler<HTMLInputElement>;
 }
 
-const InputField: React.FC<InputFieldProps> = ({
+const InputField = forwardRef<HTMLInputElement, InputFieldProps>(({
 	label = "",
 	className = "",
 	error,
@@ -29,9 +32,9 @@ const InputField: React.FC<InputFieldProps> = ({
 	type,
 	disabled,
 	mask,
-  minValue,
+	minValue,
 	...props
-}) => {
+}, ref) => {
 	const [show, setShow] = useState(false);
 
 	return (
@@ -56,7 +59,8 @@ const InputField: React.FC<InputFieldProps> = ({
 				<div className="relative">
 					<input
 						{...props}
-            min={minValue}
+						ref={ref}
+						min={minValue}
 						disabled={disabled}
 						type={type === 'password' && show ? 'text' : type}
 						autoComplete={type === 'password' ? 'new-password' : 'on'}
@@ -80,6 +84,8 @@ const InputField: React.FC<InputFieldProps> = ({
 			<InputError error={error || ''} />
 		</div>
 	);
-};
+});
+
+InputField.displayName = 'InputField';
 
 export default InputField;
