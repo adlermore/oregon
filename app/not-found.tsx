@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 export default function NotFound() {
   return (
-    <div className="relative h-full  min-h-[calc(100vh-247px)] -mb-10 flex items-center justify-center text-white overflow-hidden">
+    <div className="relative h-full  min-h-[calc(100vh-194px)] -mb-10 flex items-center justify-center text-white overflow-hidden">
       {/* <Image
         src={notfountImage}
         alt="404 Not Found"

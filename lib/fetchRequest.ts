@@ -1,35 +1,35 @@
 'use server';
 
-import { authOptions } from "./auth/options";
 import { getServerSession } from "next-auth";
+import { authOptions } from "./auth/options";
 import { API_URL } from "@/utils/constants";
 
-
-export const fetchRequest = async (
-  endpoint: string,
-  options: RequestInit = {}
-) => {
+export const fetchRequest = async (endpoint: string, options: RequestInit = {}) => {
   const session = await getServerSession(authOptions);
   const token = session?.accessToken;
-  const isFormData = options?.body instanceof FormData;
+  const isFormData = options.body instanceof FormData;
 
   const response = await fetch(API_URL + endpoint, {
-    method: 'GET',
+    method: options.method || 'GET',
     ...options,
     headers: {
       Accept: 'application/json',
       ...(!isFormData && { 'Content-Type': 'application/json' }),
-      ...(token && {
-        Authorization: `Bearer ${token}`,
-      }),
+      ...(token && { Authorization: `Bearer ${token}` }),
       ...options.headers,
     },
   });
 
   const textResponse = await response.text();
 
+  let parsed;
+  try {
+    parsed = textResponse ? JSON.parse(textResponse) : {};
+  } catch {
+    parsed = { message: textResponse };
+  }
+
   if (!response.ok) {
-    const parsed = JSON.parse(textResponse);
     return {
       success: false,
       status: response.status,
@@ -38,7 +38,5 @@ export const fetchRequest = async (
     };
   }
 
-  return textResponse
-    ? JSON.parse(textResponse)
-    : { success: true, status: response.status };
+  return parsed;
 };

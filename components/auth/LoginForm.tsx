@@ -8,6 +8,9 @@ import InputField from '@/components/common/input';
 import CustomCheckbox from '@/components/common/input/CustomCheckbox';
 import Button from '@/components/common/button';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
+import { signIn } from 'next-auth/react';
 
 interface LoginFormValues {
   email: string;
@@ -16,18 +19,30 @@ interface LoginFormValues {
 
 const LoginForm: React.FC = () => {
   const [rememberMe, setRememberMe] = useState(false);
+  const router = useRouter();
 
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<LoginFormValues>({
     resolver: yupResolver(loginSchema),
     mode: 'onTouched',
   });
 
-  const onSubmit = (data: LoginFormValues) => {
-    console.log('Login form data:', { ...data, rememberMe });
+  const onSubmit = async (data: LoginFormValues) => {
+    const res = await signIn("credentials", {
+      ...data,
+      remember_me: rememberMe,
+      redirect: false,
+    });
+    
+    if (res?.ok) {
+      router.push(`/dashboard`);
+      router.refresh();
+    } else {
+      toast.error('Invalid Email or Password');
+    }
   };
 
   return (
@@ -78,7 +93,7 @@ const LoginForm: React.FC = () => {
             </Link>
           </div>
 
-          <Button type="submit" className="contained w-full mt-2">
+          <Button type="submit" className="contained w-full mt-2" disabled={isSubmitting} isLoading={isSubmitting}>
             Sign In
           </Button>
         </form>

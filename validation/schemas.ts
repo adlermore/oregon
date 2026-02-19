@@ -37,5 +37,7 @@ export const registerPageSchema = yup.object({
     phone,
     email,
     password,
-    password_confirmation
+    password_confirmation,
+    usdot: usdot,
+    cdd_account: required
 });

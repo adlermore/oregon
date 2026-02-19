@@ -1,8 +1,22 @@
-
 import CredentialsProvider from "next-auth/providers/credentials";
-import type { NextAuthOptions, Session, User } from "next-auth";
+import type { NextAuthOptions } from "next-auth";
 import { API_URL, NEXTAUTH_SECRET } from "@/utils/constants";
 import { cookies } from "next/headers";
+
+declare module "next-auth" {
+    interface Session {
+        accessToken?: string;
+    }
+}
+
+interface CustomUser {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+    accessToken: string;
+    refreshToken?: string;
+}
 
 export const authOptions: NextAuthOptions = {
     providers: [
@@ -11,61 +25,81 @@ export const authOptions: NextAuthOptions = {
             credentials: {
                 email: { label: "Email", type: "text" },
                 password: { label: "Password", type: "password" },
+                remember_me: { label: "Remember Me", type: "checkbox" },
             },
+
             async authorize(credentials) {
-                if (!credentials?.email || !credentials?.password) return null;
+                if (!credentials?.email || !credentials?.password) {
+                    throw new Error("Email and password required");
+                }
 
                 const res = await fetch(`${API_URL}auth/login`, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Accept": "application/json",
+                    },
                     body: JSON.stringify({
                         email: credentials.email,
                         password: credentials.password,
+                        remember_me: !!credentials.remember_me,
                     }),
                 });
 
-                if (!res.ok) return null;
                 const json = await res.json();
-                if (!json?.success || !json?.data?.token) return null;
+
+                if (!res.ok || !json.success) {
+                    throw new Error(json.message || "Invalid credentials");
+                }
 
                 return {
-                    id: String(json.data.user?.id ?? credentials.email),
-                    email: json.data.user?.email ?? credentials.email,
-                    accessToken: json.data.token,
-                    refreshToken: json.data.refresh_token,
-                };
+                    id: String(json.data.id),
+                    name: json.data.name,
+                    email: json.data.email,
+                    role: json.data.role,
+                    accessToken: json.token,
+                } as CustomUser;
             },
         }),
     ],
-    session: { strategy: "jwt" },
-    pages: { signIn: "/auth/sign-in" },
+
+    session: {
+        strategy: "jwt",
+    },
+
+    pages: {
+        signIn: "/login",
+    },
 
     callbacks: {
-        jwt({ token, user }) {
+        async jwt({ token, user }) {
             if (user) {
-                token.accessToken = (user as User).accessToken;
-                token.refreshToken = (user as User).refreshToken;
+                token.id = user.id;
+                token.role = (user as CustomUser).role;
+                token.accessToken = (user as CustomUser).accessToken;
             }
             return token;
         },
-        session({ session, token }) {
-            (session as Session).accessToken = token.accessToken;
-            (session as Session).refreshToken = token.refreshToken;
+
+        async session({ session, token }) {
+            session.user = {
+                ...session.user,
+                id: token.id as string,
+                role: token.role as string,
+            };
+
+            session.accessToken = token.accessToken as string;
+
             return session;
         },
     },
+
     events: {
-        async signIn({ user }) {
-            if ((user as User).refreshToken) {
-                const cookieStore = await cookies();
-                cookieStore.set('next-auth.refresh-token', (user as User).refreshToken, {httpOnly: true});
-            }
-        },
         async signOut() {
             const cookieStore = await cookies();
-            cookieStore.delete('next-auth.refresh-token');
             cookieStore.delete('next-auth.session-token');
         }
     },
+
     secret: NEXTAUTH_SECRET,
 };

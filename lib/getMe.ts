@@ -10,6 +10,6 @@ export type User = {
 } | null;
 
 export const getMe = cache(async () => {
-  const res = await fetchRequest("me");
+  const res = await fetchRequest("auth/me");
   return res.success ? res.data as User : null
 });
